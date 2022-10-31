@@ -25,7 +25,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Parser for the Open Source Iris System")
     parser.add_argument("--cfg_path",
                         type=str,
-                        default="/home/pi/Desktop/iris/cfg/cfg.yaml",
+                        default="../cfg/cfg.yaml",
                         help="path of the configuration file")
     args = parser.parse_args()
     cfg = get_cfg(args.cfg_path)
@@ -110,11 +110,7 @@ if __name__ == "__main__":
     # time for segmentation (SegNet / UNet / OSIRIS)
     time_segnet = []
     time_unet = []
-    time_osiris = []
     
-    # time for PAD (OSPAD_3D / OSPAD_2D)
-    time_ospad_3d = []
-    time_ospad_2d = []
     
     # time for iris recognition
     time_ir = []
@@ -184,18 +180,10 @@ if __name__ == "__main__":
         print('UNet Summary')
         print('Avg time per pair =', sum(time_unet)/(len(meta)//2))
         print('#######################################################')
-    else:
-        print('#######################################################')
-        print('OSIRIS Summary')
-        print('Avg time per pair =', sum(time_osiris)/(len(meta)//2))
-        print('#######################################################')
     
     scipy.io.savemat('times_all.mat',
                      mdict={'time_segnet': time_segnet,\
                             'time_unet': time_unet,\
-                            'time_osiris': time_osiris,\
-                            'time_ospad_3d': time_ospad_3d,\
-                            'time_ospad_2d': time_ospad_2d,\
                             'time_ir': time_ir})
     
     
