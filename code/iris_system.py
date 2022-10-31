@@ -9,15 +9,14 @@ import numpy as np
 import scipy
 import scipy.io
 from PIL import Image
-from gpiozero import LED
+
 from time import sleep
 from utils.utils import get_cfg, pi_camera, xyr_from_txt
 from segmentation.SegNet import SegNet
 from segmentation.UNet import UNet
-from PAD.OSPAD_2D import OSPAD_2D
-from PAD.OSPAD_3D import OSPAD_3D
+
 from recognition.IrisRecognition import IrisRecognition
-from OSIRIS_SEGM.OSIRIS_SEGM import OsIris
+
 import multiprocessing
 from multiprocessing import Pool
 
@@ -101,16 +100,11 @@ if __name__ == "__main__":
         segnet = SegNet(cfg)
     elif cfg["use_unet"]:
         unet = UNet(cfg)
-    elif cfg["use_osiris"]:
-        osiris = OsIris(cfg)
-        pool = Pool()
     else:
         print("Please specify a segmentation method")
         sys.exit()
 
-    # Load PAD methods
-    ospad_3d = OSPAD_3D(cfg)
-    ospad_2d = OSPAD_2D(cfg)
+
     ir = IrisRecognition(cfg)
     
     # time for segmentation (SegNet / UNet / OSIRIS)
@@ -162,49 +156,7 @@ if __name__ == "__main__":
             mask1, pupil_xyr1, iris_xyr1 = unet.get_circle(mask1)
             mask2, pupil_xyr2, iris_xyr2 = unet.get_circle(mask2)
             time_unet.append(time.time() - unet_start)
-        else:
-            #Segmentation by OSIRIS
-            osiris_start = time.time()
-            res = pool.map(osiris.get_mask, [[img1_name], [img2_name]]) #for img in [img1_name, img2_name]]
-
-            mask1 = res[0][0]
-            mask2 = res[1][0]
-            pupil_xyr1, iris_xyr1 = osiris.get_circle(img1_name)
-            pupil_xyr2, iris_xyr2 = osiris.get_circle(img2_name)
-            
-            time_osiris.append(time.time() - osiris_start)
-            os.system("rm "+cfg["output_path"]+'*')
-            os.system("rm "+cfg["imagelist_path"]+"*.txt")
         
-        # OSPAD 3D
-        img1 = np.array(img1)
-        img1 = img1[:,:,0] if len(img1.shape)==3 else img1
-        img2 = np.array(img2)
-        img2 = img2[:,:,0] if len(img2.shape)==3 else img2
-        
-        imgs = np.stack([img1, img2], axis=2)
-        masks = np.stack([mask1, mask2], axis=2)
-        pupil_xyr = [pupil_xyr1, pupil_xyr2]
-        iris_xyr = [iris_xyr1, iris_xyr2]
-        
-        ospad3d_start = time.time()
-        score_3d, normal = ospad_3d.predict(imgs, masks, pupil_xyr, iris_xyr, left = 'left' in img1_name.lower())
-        time_ospad_3d.append(time.time() - ospad3d_start)
-        if meta[2*idx][3] == 'live':
-            real_scores_3D.append(score_3d)
-        else:
-            fake_scores_3D.append(score_3d)
-        
-        # OSPAD 2D
-        ospad2d_start = time.time()
-        score_2d = ospad_2d.predict(img1, img2)
-        time_ospad_2d.append(time.time() - ospad2d_start)
-        if score_2d < 0:
-            if meta[2*idx][3] == 'fake':
-                error_2d += 1
-        else:
-            if meta[2*idx][3] == 'live':
-                error_2d += 1
         
         # Iris recognition (measure time for matching against a template)
         img1_norm = ir.get_rubbersheet(img1, pupil_xyr1[1], pupil_xyr1[0], pupil_xyr1[2], iris_xyr1[2])
@@ -219,7 +171,7 @@ if __name__ == "__main__":
         time_ir.append(time.time() - ir_start)
         
         # Print
-        print("Sample {0}, {1}, 3D score = {2}, 2D score = {3}, ir score = {4}".format(idx, meta[2*idx][3], score_3d, score_2d, ir_score))
+        print("Sample {0}, {1}, ir score = {2}".format(idx, meta[2*idx][3], ir_score))
     
     # Running time summary
     if cfg["use_segnet"]:
