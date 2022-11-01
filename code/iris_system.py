@@ -9,9 +9,11 @@ import numpy as np
 import scipy
 import scipy.io
 from PIL import Image
+import yaml
+
+sys.path.append("..")
 
 from time import sleep
-from utils.utils import get_cfg, pi_camera, xyr_from_txt
 from segmentation.SegNet import SegNet
 from segmentation.UNet import UNet
 
@@ -20,6 +22,9 @@ from recognition.IrisRecognition import IrisRecognition
 import multiprocessing
 from multiprocessing import Pool
 
+def get_cfg(cfg_path):
+    cfg = yaml.load(open(cfg_path, 'r'))
+    return cfg
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Parser for the Open Source Iris System")
