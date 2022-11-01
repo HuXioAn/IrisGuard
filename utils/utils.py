@@ -1,7 +1,7 @@
 # created by zfang 2020/02/18 10:59pm
 import yaml
-from picamera import PiCamera
-from gpiozero import LED
+#from picamera import PiCamera
+#from gpiozero import LED
 import numpy as np
 from PIL import Image
 import cv2
@@ -40,61 +40,61 @@ def save(x, name):
     x = Image.fromarray(x)
     x.save(name)
 
-class pi_camera(object):
-    def __init__(self, cfg):
-        self.camera = PiCamera()
-        self.camera.sensor_mode = 2
-        self.camera.resolution = (2592, 1944)
-        self.left_illum = LED(cfg["left_illum_gpio_pin"])
-        self.right_illum = LED(cfg["right_illum_gpio_pin"])
-        self.cfg = cfg
+# class pi_camera(object):
+#     def __init__(self, cfg):
+#         self.camera = PiCamera()
+#         self.camera.sensor_mode = 2
+#         self.camera.resolution = (2592, 1944)
+#         self.left_illum = LED(cfg["left_illum_gpio_pin"])
+#         self.right_illum = LED(cfg["right_illum_gpio_pin"])
+#         self.cfg = cfg
         
-    def capture_images(self, image_prefix):
+#     def capture_images(self, image_prefix):
         
-        # capture w/ left illum
-        self.left_illum.on()
-        self.right_illum.off()
-        #self.camera.start_preview()
-        self.camera.start_preview(fullscreen=False, window=(800,100,640,480))
-        input("Press Enter to capture left illumination...")
-        left_i_name = "{0}/{1}_l".format(self.cfg["image_save_dir"], image_prefix)
-        self.camera.capture(left_i_name+'.jpg')
+#         # capture w/ left illum
+#         self.left_illum.on()
+#         self.right_illum.off()
+#         #self.camera.start_preview()
+#         self.camera.start_preview(fullscreen=False, window=(800,100,640,480))
+#         input("Press Enter to capture left illumination...")
+#         left_i_name = "{0}/{1}_l".format(self.cfg["image_save_dir"], image_prefix)
+#         self.camera.capture(left_i_name+'.jpg')
         
-        # capture w/ right illum
-        self.left_illum.off()
-        self.right_illum.on()
-        input("Press Enter to capture right illumination...")
-        right_i_name = "{0}/{1}_r".format(self.cfg["image_save_dir"], image_prefix)
-        self.camera.capture(right_i_name+'.jpg')
-        self.camera.stop_preview()
-        self.right_illum.off()
+#         # capture w/ right illum
+#         self.left_illum.off()
+#         self.right_illum.on()
+#         input("Press Enter to capture right illumination...")
+#         right_i_name = "{0}/{1}_r".format(self.cfg["image_save_dir"], image_prefix)
+#         self.camera.capture(right_i_name+'.jpg')
+#         self.camera.stop_preview()
+#         self.right_illum.off()
         
-        # Post-process pictures
-        left_i_name = "{0}/{1}_l".format(self.cfg["image_save_dir"], image_prefix)
-        right_i_name = "{0}/{1}_r".format(self.cfg["image_save_dir"], image_prefix)
-        self.post_process(left_i_name)
-        self.post_process(right_i_name)
+#         # Post-process pictures
+#         left_i_name = "{0}/{1}_l".format(self.cfg["image_save_dir"], image_prefix)
+#         right_i_name = "{0}/{1}_r".format(self.cfg["image_save_dir"], image_prefix)
+#         self.post_process(left_i_name)
+#         self.post_process(right_i_name)
         
-        print("Capture Complete!")
+#         print("Capture Complete!")
         
-    def post_process(self, img_name):
-        # Locate iris and save images
-        o_img = Image.open(img_name+'.jpg').convert('L')
-        o_img = np.array(o_img)
-        img = (o_img < 50)*255
-        img = img.astype('uint8')
-        nb_components, output, stats, centoids = cv2.connectedComponentsWithStats(img, connectivity=8)
-        sizes = stats[1:,-1]
-        nb_components -=1
-        max_size = 90000
-        for i in range(nb_components):
-            if sizes[i] > max_size:
-                img[output==i+1] = 0
+#     def post_process(self, img_name):
+#         # Locate iris and save images
+#         o_img = Image.open(img_name+'.jpg').convert('L')
+#         o_img = np.array(o_img)
+#         img = (o_img < 50)*255
+#         img = img.astype('uint8')
+#         nb_components, output, stats, centoids = cv2.connectedComponentsWithStats(img, connectivity=8)
+#         sizes = stats[1:,-1]
+#         nb_components -=1
+#         max_size = 90000
+#         for i in range(nb_components):
+#             if sizes[i] > max_size:
+#                 img[output==i+1] = 0
 
-        kernel = np.ones((9,9),np.uint8)
-        img = cv2.erode(img, kernel, iterations=2)
+#         kernel = np.ones((9,9),np.uint8)
+#         img = cv2.erode(img, kernel, iterations=2)
 
-        center = np.mean(np.where(img == 255), axis=1).astype('int')
-        img = Image.fromarray(o_img[center[0]-480:center[0]+480, center[1]-640:center[1]+640])
-        img = img.resize((640, 480), Image.BILINEAR)
-        img.save(img_name+'_processed.jpg')
+#         center = np.mean(np.where(img == 255), axis=1).astype('int')
+#         img = Image.fromarray(o_img[center[0]-480:center[0]+480, center[1]-640:center[1]+640])
+#         img = img.resize((640, 480), Image.BILINEAR)
+#         img.save(img_name+'_processed.jpg')

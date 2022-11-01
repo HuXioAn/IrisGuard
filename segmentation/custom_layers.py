@@ -3,7 +3,8 @@
 ####################################################################################
 
 from keras.layers import Activation,BatchNormalization,Conv2D
-from keras.engine.topology import Layer
+#from keras.engine.topology import Layer
+from tensorflow.python.keras.layers import Layer
 import keras.backend as K
 import tensorflow as tf
 

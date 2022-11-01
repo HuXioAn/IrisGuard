@@ -5,7 +5,7 @@ import scipy.io
 import scipy.signal
 
 from PIL import Image
-from utils import utils
+#from utils import utils
 import argparse
 from segmentation.SegNet import SegNet
 import multiprocessing

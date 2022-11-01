@@ -4,7 +4,7 @@ import numpy as np
 import keras
 from PIL import Image
 from keras.models import Model, load_model
-from custom_layers import MaxPoolingWithIndices, UpSamplingWithIndices
+from .custom_layers import MaxPoolingWithIndices, UpSamplingWithIndices
 import time
 
 keras.backend.set_learning_phase(0)
