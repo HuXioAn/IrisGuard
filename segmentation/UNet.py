@@ -1,8 +1,10 @@
-import tensorflow as tf
+import tensorflow as tf2
 import numpy as np
 from PIL import Image
 import time
 import cv2
+tf = tf2.compat.v1
+tf.disable_v2_behavior()
 
 # CCNet
 class UNet(object):
@@ -19,7 +21,7 @@ class UNet(object):
             gf.ParseFromString(f.read())
         
         self.input = tf.placeholder(np.float32, shape = [None, 1, 240, 320], name = 'test_input')
-        
+        print(self.input)
         tf.import_graph_def(gf, {'0': self.input})
         
         self.output_tensor = self.graph.get_tensor_by_name("import/231:0")
